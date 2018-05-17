@@ -1,0 +1,943 @@
+#======================================
+#========= Gui API by AlexLew =========
+#============ Version 1.0 =============
+#======================================
+
+#================================================== Utilities ==================================================
+options:
+	debugmod : true
+
+on load:
+	import "org.bukkit.inventory.Inventory" #as {Inventory}
+	import "org.bukkit.event.inventory.InventoryClickEvent"
+	add "xxxxxxxxx" to {_shape::*}
+	add "x--------x" to {_shape::*}
+	add "xxxxxxxxx" to {_shape::*}
+	create a gui with id "square" with virtual chest and shape {_shape::*}:
+		make gui slot "x" with iron ingot
+		make gui slot "-" with diamond
+	#Classes.registerClass(new ClassInfo<>(LambdaCondition.class, "").parser(new Parser<LambdaCondition>();
+
+function GuiAPITimer(time: timespan):
+	if {_time} is set:
+		wait {_time}
+	else:
+		wait 1 tick
+
+function GuiAPIError(error: string):
+	send "[GuiAPI] Error: %{_error}%" to console
+
+function GuiAPIDebug(p: player):
+	open virtual chest inventory with size 6 named "&5Debug Menu: %{_p}%" to {_p}
+	play "ENTITY_PLAYER_LEVELUP" to {_p} at volume 1
+	format gui slot 43 of {_p} with paper named "Last Used" with lore "%{GuiAPI::debugpannel::lastupdate}%" to do nothing
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52 and 53 of {_p} with black glass named " " to do nothing
+	#format gui slot 10 of {_p} with written_book named "&bEdit link of ressource" with lore "Replace actually link with a new" to close:
+	format gui slot 40 of {_p} with sea lantern named "&bCheck" to run:
+		set {GuiAPI::debugpannel::lastupdate} to now
+		GuiAPIDebug({_p})
+
+#================================================== Effects ==================================================
+
+#==================== Simple effect ====================
+
+#========== Simple Square ==========
+effect [make] [a] square of %itemstack% [named %-string%] (for|to) %players%:
+	set {_players::*} to expression-3
+	set {_inventory} to current inventory of expression-3
+	set {_x} to {_inventory}.getSize() / 9
+	loop {_players::*}:
+		set {_slot} to ({_x} * 9) - 9
+		loop 9 times:
+			if expression-2 is set:
+				format gui slot {_slot}, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 53 and 54 of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+				add 1 to {_slot}
+			else:
+				format gui slot {_slot}, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 53 and 54 of loop-value-1 with expression-1 to do nothing
+				add 1 to {_slot}
+
+#========== Simple Circle ==========
+effect [make] [a] circle of %itemstack% [height %-integer%] [named %-string%] (for|to) %players%:
+	set {_players::*} to expression-4
+	set {_inventory} to current inventory of expression-4
+	set {_x} to {_inventory}.getSize() / 9  #x = 1
+	loop {_players::*}:
+		set {_columns} to {_x} - 2
+		if expression-2 is set:
+		#	if expression-2 is a integer between 1 and 4:
+			set {_y} and {_columns} to expression-2
+		#	set {_slot} to 
+			loop 8 times:
+				if expression-4 is set:
+					format gui slot {_slot} of loop-value-1 with expression-1 named "%expression-4%" to do nothing
+					add 1 to {_slot}
+				else:
+					format gui slot {_slot} of loop-value-1 with expression-1 to do nothing
+					add 1 to {_slot}
+#1 -> 7
+#10 -> 16
+		loop 9 times:
+			if expression-4 is set:
+				format gui slot {_slot} of loop-value-1 with expression-1 named "%expression-4%" to do nothing
+				format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 53 and 54 of loop-value-1 with expression-1 named "%expression-4%" to do nothing
+				add 1 to {_slot}
+			else:
+				format gui slot {_slot} of loop-value-1 with expression-1 to do nothing
+				format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 53 and 54 of loop-value-1 with expression-1 to do nothing
+				add 1 to {_slot}
+
+#========== Simple Column and Row ==========
+effect [make] (0¦column|1¦row) %integer% of %itemstack% [named %-string%] (for|to) %players%:
+	set {_players::*} to expression-4
+	set {_inventory} to current inventory of expression-4
+	set {_x} to {_inventory}.getSize() / 9
+	set {_y} and {_slot} to expression-1
+	loop {_players::*}:
+		switch parse mark:
+			case 0:
+				if expression-1 < 9:
+					loop {_x} times:
+						if {_y} = {_y}:
+							if {_slot} != {_y}:
+								add 9 to {_slot}
+							else:
+								set {_slot} to {_y} + 9
+						if {_y} = {_y}:
+							if expression-3 is set:	
+								format gui slot {_y} and {_slot} of loop-value-1 with expression-2 named "%expression-3%" to do nothing
+							else:
+								format gui slot {_y} and {_slot} of loop-value-1 with expression-2 to do nothing
+				else:
+					GuiAPIError("You have just 8 column and not more -> from 0 to 8")
+			case 1:
+				if expression-1 < 7:
+					loop {_x} times:
+						set {_slot} to ({_y} * 9) - 9
+						loop 9 times:
+							if {_y} = {_y}:
+								if expression-3 is set:	
+									format gui slot {_slot} of loop-value-1 with expression-2 named "%expression-3%" to do nothing
+								else:
+									format gui slot {_slot} and {_slot} of loop-value-1 with expression-2 to do nothing
+							add 1 to {_slot}
+				else:
+					GuiAPIError("You have just 6 rows and not more -> from 1 to 6")
+
+#========== Simple Cross ==========
+effect [make] [a] cross of %itemstack% [named %-string%] [[column %-integer%][and][row %-integer%]] (for|to) %players%:
+	set {_players::*} to expression-5
+	set {_inventory} to current inventory of expression-5
+	set {_x} to {_inventory}.getSize() / 9
+	set {_yc} and {_slotc} to expression-3
+	set {_yr} and {_slotr} to expression-4
+	loop {_players::*}:
+		loop 1 times:
+			if expression-3 is set:
+				if expression-3 < 9:
+					loop {_x} times:
+						if {_yc} = {_yc}:
+							if {_slotc} != {_yc}:
+								add 9 to {_slotc}
+							else:
+								set {_slotc} to {_yc} + 9
+						if expression-3 is set:
+							format gui slot {_yc} and {_slotc} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+						else:
+							format gui slot {_yc} and {_slotc} of loop-value-1 with expression-1 to do nothing
+				else:
+					GuiAPIError("You have just 8 column and not more -> from 0 to 8")
+			else if expression-2 is set:
+				format gui slot 4, 13, 22, 31, 40 and 49 of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+			else:
+				format gui slot 4, 13, 22, 31, 40 and 49 of loop-value-1 with expression-1 to do nothing
+		loop 1 times:
+			if expression-4 is set:
+				if expression-4 < 7:				
+					set {_slotrb} to {_yr} * 9
+					set {_slotra} to {_slotrb} - 9
+					loop {_x} times:				
+						if expression-2 is set:									
+							format gui slot (integers from {_slotra} to {_slotrb}) of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+						else:									
+							format gui slot (integers from {_slotra} to {_slotrb}) of loop-value-1 with expression-1 to do nothing
+				else:
+					GuiAPIError("You have just 6 rows and not more -> from 1 to 6")
+			else:
+				loop 1 times:
+					if {_x} != 1, 5 or 6:
+						add 9 to {_a}
+					else:
+						set {_a} to 18
+				set {_b} to {_a} + 8
+				if expression-2 is set:
+					format gui slot (integers from {_a} to {_b}) of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+				else:
+					format gui slot (integers from {_a} to {_b}) of loop-value-1 with expression-1 to do nothing
+
+#==================== Animations effect ====================
+
+#items 1 : expression-1
+#items 2 : expression-2
+#column : expression-3
+#basic name: expression-4
+#number of this effect times : expression-5
+#cooldown : expression-6
+#Players : expression-7
+
+#========== Drag ==========
+effect [make] drag from %itemstack% to %itemstack% in (0¦square|(1¦column|2¦row) %integer%|(3¦inside cross|4¦outside cross)) [named %-string%] [[for] %-integer% time[s]] [(77¦round trip)] [with %-timespan% cooldown [between animations]] (for|to) %players%:
+	delay the current effect
+	set {_players::*} to expression-7
+	set {_inventory} to current inventory of expression-7
+	set {_x} to {_inventory}.getSize() / 9
+	set {_y} and {_slot} to expression-3
+	loop 1 times:
+		if expression-4 is set:		
+			set {_times} to expression-4
+		else:
+			set {_times} to 1
+	loop {_players::*}:
+		loop {_times} times:
+			switch parse mark:
+				
+				#========== column ==========
+				case 0:
+					set {_nbr} to 0
+					set {_times} to 18
+					loop 1 times:
+						if {_x} < 6:
+							exit loop
+						else:
+							set {_times} to 26
+					if {_x} = 2, 3, 4 or 5:
+						loop {_x} times:
+							add 2 to {_times}
+					loop {_times} times:
+						if expression-6 is set:
+							wait expression-6
+						if expression-4 is set:
+							format gui slot {_nbr} of loop-value-1 with expression-1 named "%expression-4%" to do nothing
+						if expression-4 is not set:
+							format gui slot {_nbr} of loop-value-1 with expression-1 to do nothing
+						loop 54 times:
+							add 1 to {_nbr}
+							set {_a} to {_x} * 9
+							loop 9 times:
+								if {_nbr} = {_a}:
+									set {_stop} to true
+									exit loop
+								remove 1 from {_a}
+							if {_stop} is true:
+								exit loop
+							if {_nbr} = 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53 or 54:
+								exit loop
+					set {_nbr} to 0
+					set {_times} to 18
+					loop 1 times:
+						if {_x} < 6:
+							exit loop
+						else:
+							set {_times} to 26
+					if {_x} = 2, 3, 4 or 5:
+						loop {_x} times:
+							add 2 to {_times}
+					loop {_times} times:
+						if expression-6 is set:
+							wait expression-6
+						if expression-4 is set:
+							format gui slot {_nbr} of loop-value-1 with expression-2 named "%expression-4%" to do nothing
+						if expression-4 is not set:
+							format gui slot {_nbr} of loop-value-1 with expression-2 to do nothing
+						loop 54 times:
+							add 1 to {_nbr}
+							set {_a} to {_x} * 9
+							loop 9 times:
+								if {_nbr} = {_a}:
+									set {_stop} to true
+									exit loop
+								remove 1 from {_a}
+							if {_stop} is true:
+								exit loop
+							if {_nbr} = 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53 or 54:
+								exit loop
+				case 1:
+					if expression-3 < 9:
+						loop {_x} times:
+							if expression-6 is set:
+								wait expression-6
+							if {_y} = {_y}:
+								if expression-4 is set:	
+									format gui slot {_y} and {_slot} of loop-value-1 with expression-1 named "%expression-4%" to do nothing
+								else:
+									format gui slot {_y} and {_slot} of loop-value-1 with expression-1 to do nothing
+							add 9 to {_slot}
+						if {_slot} != 0, 1, 2, 3, 4, 5, 6, 7 and 8:
+							set {_slot} to {_y}
+						loop {_x} times:
+							if expression-6 is set:
+								wait expression-6
+							if {_y} = {_y}:
+								if expression-4 is set:	
+									format gui slot {_y} and {_slot} of loop-value-1 with expression-2 named "%expression-4%" to do nothing
+								else:
+									format gui slot {_y} and {_slot} of loop-value-1 with expression-2 to do nothing
+							add 9 to {_slot}
+						#	broadcast "Part2b: y:%{_y}%, slot:%{_slot}%"
+					else:
+						GuiAPIError("You have just 8 column and not more -> from 0 to 8")
+				
+				#========== row ==========
+				case 2:
+					if expression-3 < 7:
+						set {_slot} to ({_x} * 9) - 9
+						loop 8 times:
+							if expression-6 is set:
+								wait expression-6
+							if {_y} = {_y}:
+								if expression-4 is set:
+									format gui slot {_slot} of loop-value-1 with expression-1 named "%expression-4%" to do nothing
+								else:
+									format gui slot {_slot} of loop-value-1 with expression-1 to do nothing
+							add 1 to {_slot}
+						set {_slot} to {_y} * 9
+						loop 9 times:
+							if expression-6 is set:
+								wait expression-6
+							if {_y} = {_y}:
+								if expression-4 is set:
+									format gui slot {_slot} of loop-value-1 with expression-2 named "%expression-4%" to do nothing	
+								else:
+									format gui slot {_slot} of loop-value-1 with expression-2 to do nothing
+							add 1 to {_slot}
+					else:
+						GuiAPIError("You have just 6 rows and not more -> from 1 to 6")
+				
+				#========== Inside cross ==========
+				case 3:
+					set {_min} to {_slot} - 9
+					set {_max} to {_slot}
+					set {_a} to {_min}
+					set {_b} to {_max} - 1
+					set {_c} and {_d} to expression-3
+					remove 9 from {_c}
+					add 9 to {_d}
+					loop 7 times:
+						if {_d} <= 53:
+							add 9 to {_d}
+						else:
+							remove 9 from {_d}
+					loop 7 times:
+						if {_c} >= 0:
+							remove 9 from {_c}
+						else:
+							add 9 to {_c}
+					loop 9 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if {_a} < expression-3:
+							if expression-2 is set:
+								format gui slot {_a} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								add 1 to {_a}
+							else:
+								format gui slot {_a} of loop-value-1 with expression-1 to do nothing
+								add 1 to {_a}
+						if {_b} > expression-3:
+							if expression-2 is set:
+								format gui slot {_b} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								remove 1 from {_b}
+							else:
+								format gui slot {_b} of loop-value-1 with expression-1 to do nothing
+								remove 1 from {_b}
+						if {_c} < expression-3:
+							if expression-2 is set:
+								format gui slot {_c} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								add 9 to {_c}
+							else:
+								format gui slot {_c} of loop-value-1 with expression-1 to do nothing
+								add 9 to {_c}
+						if {_d} > expression-3:
+							if expression-2 is set:
+								format gui slot {_d} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								remove 9 from {_d}
+							else:
+								format gui slot {_d} of loop-value-1 with expression-1 to do nothing
+								remove 9 from {_d}
+					set {_a} to {_min}
+					set {_b} to {_max} - 1
+					set {_c} and {_d} to expression-3
+					remove 9 from {_c}
+					add 9 to {_d}
+					loop 7 times:
+						if {_d} <= 53:
+							add 9 to {_d}
+						else:
+							remove 9 from {_d}
+					loop 7 times:
+						if {_c} >= 0:
+							remove 9 from {_c}
+						else:
+							add 9 to {_c}
+					loop 9 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if {_a} < expression-3:
+							if expression-2 is set:
+								format gui slot {_a} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								add 1 to {_a}
+							else:
+								format gui slot {_a} of loop-value-1 with expression-2 to do nothing
+								add 1 to {_a}
+						if {_b} > expression-3:
+							if expression-2 is set:
+								format gui slot {_b} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								remove 1 from {_b}
+							else:
+								format gui slot {_b} of loop-value-1 with expression-2 to do nothing
+								remove 1 from {_b}
+						if {_c} < expression-3:
+							if expression-2 is set:
+								format gui slot {_c} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								add 9 to {_c}
+							else:
+								format gui slot {_c} of loop-value-1 with expression-2 to do nothing
+								add 9 to {_c}
+						if {_d} > expression-3:
+							if expression-2 is set:
+								format gui slot {_d} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								remove 9 from {_d}
+							else:
+								format gui slot {_d} of loop-value-1 with expression-2 to do nothing
+								remove 9 from {_d}
+				
+				#========== Outisde cross ==========
+				case 4:
+					set {_a}, {_b}, {_c} and {_d} to expression-3
+					add 1 to {_a}
+					remove 1 from {_b}
+					add 9 to {_c}
+					remove 9 from {_d}
+					set {_min} to {_slot} - 9
+					set {_max} to {_slot}
+					loop 9 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if {_a} < {_max}:
+							if expression-2 is set:
+								format gui slot {_a} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								add 1 to {_a}
+							else:
+								format gui slot {_a} of loop-value-1 with expression-1 to do nothing
+								add 1 to {_a}
+						if {_b} >= {_min}:
+							if expression-2 is set:
+								format gui slot {_b} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								remove 1 from {_b}
+							else:
+								format gui slot {_b} of loop-value-1 with expression-1 to do nothing
+								remove 1 from {_b}
+						if {_c} <= 53:
+							if expression-2 is set:
+								format gui slot {_c} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								add 9 to {_c}
+							else:
+								format gui slot {_c} of loop-value-1 with expression-1 to do nothing
+								add 9 to {_c}
+						if {_d} >= 0:
+							if expression-2 is set:
+								format gui slot {_d} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								remove 9 from {_d}
+							else:
+								format gui slot {_d} of loop-value-1 with expression-1 to do nothing
+								remove 9 from {_d}
+					set {_a}, {_b}, {_c} and {_d} to expression-3
+					add 1 to {_a}
+					remove 1 from {_b}
+					loop 9 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if {_a} < {_max}:
+							if expression-2 is set:
+								format gui slot {_a} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								add 1 to {_a}
+							else:
+								format gui slot {_a} of loop-value-1 with expression-2 to do nothing
+								add 1 to {_a}
+						if {_b} >= {_min}:
+							if expression-2 is set:
+								format gui slot {_b} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								remove 1 from {_b}
+							else:
+								format gui slot {_b} of loop-value-1 with expression-2 to do nothing
+								remove 1 from {_b}
+						if {_c} <= 53:
+							if expression-2 is set:
+								format gui slot {_c} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								add 9 to {_c}
+							else:
+								format gui slot {_c} of loop-value-1 with expression-2 to do nothing
+								add 9 to {_c}
+						if {_d} >= 0:
+							if expression-2 is set:
+								format gui slot {_d} of loop-value-1 with expression-2 named "%expression-2%" to do nothing
+								remove 9 from {_d}
+							else:
+								format gui slot {_d} of loop-value-1 with expression-2 to do nothing
+								remove 9 from {_d}
+
+#items 1 : expression-1
+#basic name: expression-2
+#outide column : case 0
+#inside colum : case 1
+#outide row : case 2
+#inside row : case 3
+#slot : expression-3
+#number of this effect times : expression-4
+#cooldown : expression-5
+#Players : expression-6
+
+#========== Touch ==========
+effect [make] touch [effect] with %itemstack% [named %-string%] with ((0¦outside column|1¦inside column)|(2¦inside row|3¦outside row)|(4¦inside cross|5¦outside cross)|6¦point) [direction] and start [from] slot %integer% [[for] %-integer% times] [(77¦round trip)] [with %-timespan% cooldown [between animation[s]] (for|to) %players%:
+	delay the current effect
+	set {_players::*} to expression-6
+	set {_inventory} to current inventory of expression-6
+	set {_x} to {_inventory}.getSize() / 9
+	set {_y} and {_slot} to expression-3
+	loop 1 times:
+		if expression-4 is set:		
+			set {_times} to expression-4
+		else:
+			set {_times} to 1
+	loop 1 times:
+		if {_slot} < 9:
+			set {_slot} to 9
+			exit loop
+		if {_slot} < 18:
+			set {_slot} to 18
+			exit loop
+		if {_slot} < 27:
+			set {_slot} to 27
+			exit loop
+		if {_slot} < 36:
+			set {_slot} to 36
+			exit loop
+		if {_slot} < 45:
+			set {_slot} to 45
+			exit loop
+		if {_slot} < 54:
+			set {_slot} to 54
+			exit loop
+	loop {_players::*}:
+		loop {_times} times:
+			switch parse mark:
+				
+				#========== Outside column ==========
+				case 0:
+					set {_cs} to expression-3
+					set {_c} to {_cs} - 27
+					set {_d} to {_cs} + 27
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							if expression-2 is set:
+								format gui slot {_c} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+							else:
+								format gui slot {_c} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 to do nothing
+						if {_c} < expression-3:
+							add 9 to {_c}
+						if {_d} > expression-3:
+							remove 9 from {_d}
+					set {_c} to {_cs} - 27
+					set {_d} to {_cs} + 27
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							format gui slot {_c} of loop-value-1 with air to do nothing
+							format gui slot {_d} of loop-value-1 with air to do nothing
+						if {_c} < expression-3:
+							add 9 to {_c}
+						if {_d} > expression-3:
+							remove 9 from {_d}
+								
+				#========== Inside column ==========
+				case 1:
+					set {_c} and {_d} to expression-3
+					set {_expr} to expression-3
+					remove 9 from {_c}
+					add 9 to {_d}
+					loop 7 times:
+						if {_d} <= 53:
+							add 9 to {_d}
+					loop 7 times:
+						if {_c} >= 0:
+							remove 9 from {_c}
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							if expression-2 is set:
+								format gui slot {_c} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+							else:
+								format gui slot {_c} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 to do nothing
+						if {_c} < ({_expr} - 9):
+							add 9 to {_c}
+						if {_d} > ({_expr} + 9):
+							remove 9 from {_d}
+					set {_c} and {_d} to expression-3
+					remove 9 from {_c}
+					add 9 to {_d}
+					loop 7 times:
+						if {_d} <= 53:
+							add 9 to {_d}
+						else:
+							remove 9 from {_d}
+					loop 7 times:
+						if {_c} >= 0:
+							remove 9 from {_c}
+						else:
+							add 9 to {_c}
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							format gui slot {_c} of loop-value-1 with air to do nothing
+							format gui slot {_d} of loop-value-1 with air to do nothing
+						if {_c} < ({_expr} - 9):
+							add 9 to {_c}
+						if {_d} > ({_expr} + 9):
+							remove 9 from {_d}
+			
+				#========== Inside row ==========
+				case 2:
+					set {_min} to {_slot} - 9
+					set {_max} to {_slot}
+					set {_a} to {_min}
+					set {_b} to {_max} - 1
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if {_a} = {_y}:
+							add 54 to {_a}
+						if {_b} = {_y}:
+							remove 54 from {_b}
+						loop 1 times:
+							if expression-2 is set:
+								format gui slot {_a} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+							else:
+								format gui slot {_a} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 to do nothing
+						if {_a} < ({_y} - 1):
+							add 1 to {_a}
+						if {_b} > ({_y} + 1):
+							remove 1 from {_b}
+					set {_a} to {_min}
+					set {_b} to {_max} - 1
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							format gui slot {_a} of loop-value-1 with air to do nothing
+							format gui slot {_b} of loop-value-1 with air to do nothing
+						if {_a} < ({_y} - 1):
+							add 1 to {_a}
+						if {_b} > ({_y} + 1):
+							remove 1 from {_b}
+				
+				#========== Outside row ==========
+				case 3:
+					set {_a} and {_b} to expression-3
+					add 1 to {_a}
+					remove 1 from {_b}
+					set {_min} to ({_slot} - 9) + 1
+					set {_max} to {_slot} - 1
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							if expression-2 is set:
+								format gui slot {_a} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+							else:
+								format gui slot {_a} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 to do nothing
+						if {_a} < {_max}:
+							add 1 to {_a}
+						if {_b} >= {_min}:
+							remove 1 from {_b}
+					set {_a} and {_b} to expression-3
+					add 1 to {_a}
+					remove 1 from {_b}
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							format gui slot {_a} of loop-value-1 with air to do nothing
+							format gui slot {_b} of loop-value-1 with air to do nothing
+						if {_a} < {_max}:
+							add 1 to {_a}
+						if {_b} >= {_min}:
+							remove 1 from {_b}
+
+				#========== Outside cross ==========
+				case 5:
+					set {_a}, {_b}, {_c} and {_d} to expression-3
+					remove 1 from {_a} #left
+					add 1 to {_b} #right
+					add 9 to {_d} #down
+					remove 9 from {_c} #up
+					set {_min} to {_slot} - 9 #max - 9
+					set {_max} to {_slot}
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if {_b} = {_y}:
+							remove 1 from {_b}
+						if {_a} = {_y}:
+							add 1 to {_a}
+						if {_c} = {_y}:
+							remove 9 from {_c}
+						if {_d} = {_y}:
+							add 9 to {_d}
+						loop 1 times:
+							if expression-2 is set:
+								if {_a} >= {_min}:	
+									format gui slot {_a} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_c} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+							else:
+								format gui slot {_a} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_c} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 to do nothing
+						if {_b} < {_max}:
+							add 1 to {_b}
+						if {_a} >= {_min}:
+							remove 1 from {_a}
+						if {_c} <= 53:
+							add 9 to {_c}
+						if {_d} >= 0:
+							remove 9 from {_d}
+					set {_a}, {_b}, {_c} and {_d} to expression-3
+					add 1 to {_a}
+					remove 1 from {_b}
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							format gui slot {_a} of loop-value-1 with air to do nothing
+							format gui slot {_b} of loop-value-1 with air to do nothing
+							format gui slot {_c} of loop-value-1 with air to do nothing
+							format gui slot {_d} of loop-value-1 with air to do nothing
+						if {_b} < {_max}:
+							add 1 to {_b}
+						if {_a} >= {_min}:
+							remove 1 from {_a}
+						if {_c} <= 53:
+							add 9 to {_c}
+						if {_d} >= 0:
+							remove 9 from {_d}
+				
+				#========== Inside cross ==========
+				case 4:
+					set {_min} to {_slot} - 9
+					set {_max} to {_slot}
+					set {_a} to {_min}
+					set {_b} to {_max} - 1
+					set {_c} and {_d} to expression-3
+					remove 9 from {_c}
+					add 9 to {_d}
+					loop 7 times:
+						if {_d} <= 53:
+							add 9 to {_d}
+					loop 7 times:
+						if {_c} >= 0:
+							remove 9 from {_c}
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if {_a} = {_y}:
+							add 54 to {_a}
+						if {_b} = {_y}:
+							remove 54 from {_b}
+						if {_c} = {_y}:
+							add 54 to {_c}
+						if {_d} = {_y}:
+							remove 54 from {_d}
+						loop 1 times:
+							if expression-2 is set:
+								format gui slot {_a} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_c} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+							else:
+								format gui slot {_a} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_b} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_c} of loop-value-1 with expression-1 to do nothing
+								format gui slot {_d} of loop-value-1 with expression-1 to do nothing
+						if {_a} < ({_y} - 1):
+							add 1 to {_a}
+						if {_b} > ({_y} + 1):
+							remove 1 from {_b}
+						if {_c} < ({_y} - 9):
+							add 9 to {_c}
+						if {_d} > ({_y} + 9):
+							remove 9 from {_d}
+					set {_a} to {_min}
+					set {_b} to {_max} - 1
+					set {_c} and {_d} to expression-3
+					remove 9 from {_c}
+					add 9 to {_d}
+					loop 7 times:
+						if {_d} <= 53:
+							add 9 to {_d}
+					loop 7 times:
+						if {_c} >= 0:
+							remove 9 from {_c}
+					loop 8 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						loop 1 times:
+							format gui slot {_a} of loop-value-1 with air to do nothing
+							format gui slot {_b} of loop-value-1 with air to do nothing
+							format gui slot {_c} of loop-value-1 with air to do nothing
+							format gui slot {_d} of loop-value-1 with air to do nothing
+						if {_a} < ({_y} - 1):
+							add 1 to {_a}
+						if {_b} > ({_y} + 1):
+							remove 1 from {_b}
+						if {_c} < ({_y} - 9):
+							add 9 to {_c}
+						if {_d} > ({_y} + 9):
+							remove 9 from {_d}
+				
+				#========== Point ==========
+				case 6:
+					loop 1 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if expression-2 is set:
+							format gui slot expression-3 of loop-value-1 with expression-1 named "%expression-2%" to do nothing
+							add 1 to {_a}
+						else:
+							format gui slot expression-3 of loop-value-1 with expression-1 to do nothing
+					loop 1 times:
+						loop 1 times:
+							if expression-5 is set:
+								wait expression-5
+							else:
+								wait 1 tick
+						if expression-2 is set:
+							format gui slot expression-3 of loop-value-1 with air named "%expression-2%" to do nothing
+							add 1 to {_a}
+						else:
+							format gui slot expression-3 of loop-value-1 with air to do nothing
+					
+			#	else:
+			#		GuiAPIError("You have just 6 rows and not more -> from 1 to 6")
+				
+
+#========== Other ==========
+effect open debug (inventory|menu) (to|for) %player%:
+	delay the current effect
+	if {@debugmod} is true:
+		if inventory name of current inventory of expression-1 is "&a&ldebug" or "&5Debug Menu: %expression-1%":
+			play "ENTITY_ENDERDRAGON_GROWL" to expression-1 at volume 1
+			wait 2 seconds
+			set {_p} to expression-1
+			open virtual chest inventory with size 6 named "&5Debug Menu: %expression-1%" to expression-1
+			format gui slot 43 of expression-1 with paper named "Last Used" with lore "%{GuiAPI::debugpannel::lastupdate}%" to do nothing
+			format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52 and 53 of expression-1 with black glass named " " to do nothing
+			#format gui slot 10 of {_p} with written_book named "&bEdit link of ressource" with lore "Replace actually link with a new" to close:
+			format gui slot 40 of expression-1 with sea lantern named "&bCheck" to run:
+				set {GuiAPI::debugpannel::lastupdate} to now
+				GuiAPIDebug({_p})
+
+#================================================== Eexpressions ==================================================
+
+#========== Clicked slot ==========
+
+get expression [GuiAPI] clicked slot:
+	set {_s} to event.getSlot()
+	if {_s} >= 0:
+		return {_s}
+	else:
+		return -1
+
+get expression [GuiAPI] clicked row:
+	set {_s} to event.getSlot()
+	if {_s} is between 0 and 8:
+		return 1
+	if {_s} is between 9 and 17:
+		return 2
+	if {_s} is between 18 and 26:
+		return 3
+	if {_s} is between 27 and 35:
+		return 4
+	if {_s} is between 36 and 44:
+		return 5
+	if {_s} is between 45 and 53:
+		return 6
+
+#COIN EN BAS A GAUCHE
+	# set {_x} to {_inventory}.getSize() / 9
+	#		loop {_x} times:
+	#			format gui slot 0 and {_slot} of loop-value-1 with {_item} named "%expression-2%" to do nothing
+	#			add ({_x} - 1) * 9 to {_slot}
